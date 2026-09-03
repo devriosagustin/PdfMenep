@@ -1,0 +1,6 @@
+export const robotsConfig = {
+  /** Paths to keep out of search even when indexable, e.g. ['/admin']. */
+  disallow: [] as string[],
+  /** Optional crawl-delay (seconds) for the default user-agent. */
+  crawlDelay: undefined as number | undefined,
+};
