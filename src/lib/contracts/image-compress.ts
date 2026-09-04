@@ -1,8 +1,13 @@
 import { z } from 'zod';
-import { MAX_COMPRESS_BYTES, MAX_COMPRESS_FILES } from '@/lib/contracts/image-compress-limits';
+import {
+  FREE_MAX_COMPRESS_BYTES,
+  FREE_MAX_COMPRESS_FILES,
+  MAX_COMPRESS_BYTES,
+  MAX_COMPRESS_FILES,
+} from '@/lib/contracts/image-compress-limits';
 import { friendlyCompressError } from '@/lib/errors/friendly';
 
-export { MAX_COMPRESS_BYTES, MAX_COMPRESS_FILES };
+export { FREE_MAX_COMPRESS_BYTES, FREE_MAX_COMPRESS_FILES, MAX_COMPRESS_BYTES, MAX_COMPRESS_FILES };
 export const DEFAULT_QUALITY = 75;
 export const MIN_QUALITY = 1;
 export const MAX_QUALITY = 100;

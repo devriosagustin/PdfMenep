@@ -46,7 +46,7 @@ async function build4PageFixture(): Promise<Uint8Array> {
 
 describe('pdf-delete-pages contract', () => {
   it('exposes the expected cap values (drift guard)', () => {
-    expect(MAX_DELETE_PAGES_BYTES).toBe(60 * 1024 * 1024);
+    expect(MAX_DELETE_PAGES_BYTES).toBe(180 * 1024 * 1024); // PRO ceiling (FREE 60 MB x3)
     expect(MAX_PAGES).toBe(100);
     expect(PDF_MAGIC).toBe('%PDF-');
     expect(MAX_FILENAME_LEN).toBe(200);

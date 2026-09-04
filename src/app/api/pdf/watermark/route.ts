@@ -3,7 +3,10 @@ import { NextResponse } from 'next/server';
 
 import { downloadNameForWatermark } from '@/lib/business/pdf-format';
 import { addPdfWatermark, PdfWatermarkError } from '@/lib/business/pdf-watermark';
+import { getCurrentPlan } from '@/lib/billing/plan-limits';
 import {
+  FREE_MAX_IMAGE_BYTES,
+  FREE_MAX_WATERMARK_BYTES,
   MAX_FILENAME_LEN,
   MAX_IMAGE_BYTES,
   MAX_TEXT_LEN,
@@ -74,6 +77,10 @@ function isImageMagic(bytes: Uint8Array, contentType: string): boolean {
 }
 
 async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
+  const plan = await getCurrentPlan();
+  const maxBytes = plan === 'PRO' ? MAX_WATERMARK_BYTES : FREE_MAX_WATERMARK_BYTES;
+  const maxImageBytes = plan === 'PRO' ? MAX_IMAGE_BYTES : FREE_MAX_IMAGE_BYTES;
+
   let form: FormData;
   try {
     form = await req.formData();
@@ -91,10 +98,13 @@ async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
       response: fieldError(friendlyWatermarkError('no_file'), 400),
     };
   }
-  if (entry.size > MAX_WATERMARK_BYTES) {
+  if (entry.size > maxBytes) {
     return {
       ok: false,
-      response: fieldError(friendlyWatermarkError('file_too_big', { mb: 60 }), 413),
+      response: fieldError(
+        friendlyWatermarkError('file_too_big', { mb: maxBytes / (1024 * 1024) }),
+        413,
+      ),
     };
   }
 
@@ -258,10 +268,13 @@ async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
       response: fieldError(friendlyWatermarkError('image_required'), 400),
     };
   }
-  if (imageEntry.size > MAX_IMAGE_BYTES) {
+  if (imageEntry.size > maxImageBytes) {
     return {
       ok: false,
-      response: fieldError(friendlyWatermarkError('image_too_big', { mb: 2 }), 413),
+      response: fieldError(
+        friendlyWatermarkError('image_too_big', { mb: maxImageBytes / (1024 * 1024) }),
+        413,
+      ),
     };
   }
   const imageContentType =

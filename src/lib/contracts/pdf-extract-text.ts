@@ -1,13 +1,14 @@
 import { z } from 'zod';
 
 import {
+  FREE_MAX_UPLOAD_BYTES,
   MAX_FILENAME_LEN,
   MAX_PAGES,
   MAX_UPLOAD_BYTES,
   PDF_MAGIC,
 } from '@/lib/contracts/pdf-convert';
 
-export { MAX_FILENAME_LEN, MAX_PAGES, MAX_UPLOAD_BYTES, PDF_MAGIC };
+export { FREE_MAX_UPLOAD_BYTES, MAX_FILENAME_LEN, MAX_PAGES, MAX_UPLOAD_BYTES, PDF_MAGIC };
 
 export const PdfExtractTextInputMeta = z.object({
   filename: z.string().min(1).max(MAX_FILENAME_LEN),

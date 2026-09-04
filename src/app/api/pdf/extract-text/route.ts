@@ -2,7 +2,9 @@ import 'server-only';
 import { NextResponse } from 'next/server';
 import { extractTextFromPdf, PdfExtractTextError } from '@/lib/business/pdf-extract-text';
 import { downloadNameForExtractText } from '@/lib/business/pdf-format';
+import { getCurrentPlan } from '@/lib/billing/plan-limits';
 import {
+  FREE_MAX_UPLOAD_BYTES,
   MAX_FILENAME_LEN,
   MAX_UPLOAD_BYTES,
   PDF_MAGIC,
@@ -43,6 +45,9 @@ interface ReadErr {
 }
 
 async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
+  const plan = await getCurrentPlan();
+  const maxBytes = plan === 'PRO' ? MAX_UPLOAD_BYTES : FREE_MAX_UPLOAD_BYTES;
+
   let form: FormData;
   try {
     form = await req.formData();
@@ -61,11 +66,11 @@ async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
     };
   }
 
-  if (entry.size > MAX_UPLOAD_BYTES) {
+  if (entry.size > maxBytes) {
     return {
       ok: false,
       response: fieldError(
-        friendlyExtractTextError('file_too_big', { mb: MAX_UPLOAD_BYTES / (1024 * 1024) }),
+        friendlyExtractTextError('file_too_big', { mb: maxBytes / (1024 * 1024) }),
         413,
       ),
     };

@@ -28,6 +28,7 @@ export interface NavItem {
 //   { label: 'Docs',    href: '/docs',    group: 'primary', menu: 'Resources' },
 //   { label: 'Sign in', href: '/login',   group: 'secondary' },
 export const navItems: NavItem[] = [
+  { label: 'Planes', href: '/planes', group: 'secondary' },
   { label: 'Características', href: '/#caracteristicas', group: 'primary', order: 1 },
   { label: 'Cómo funciona', href: '/#como-funciona', group: 'primary', order: 2 },
   {

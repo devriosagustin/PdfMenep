@@ -1,10 +1,12 @@
 import { z } from 'zod';
 
+import { PRO_SCALE } from '@/lib/billing/plan-scale';
 import { MAX_FILENAME_LEN, PDF_MAGIC } from '@/lib/contracts/pdf-convert';
 
 export { MAX_FILENAME_LEN, PDF_MAGIC };
 
-export const MAX_OCR_BYTES = 60 * 1024 * 1024; // 60 MB — mirrors the rotate / crop / watermark family
+export const FREE_MAX_OCR_BYTES = 60 * 1024 * 1024; // 60 MB — mirrors the rotate / crop / watermark family
+export const MAX_OCR_BYTES = FREE_MAX_OCR_BYTES * PRO_SCALE; // 180 MB — PRO ceiling
 export const MAX_OCR_PAGES = 30;
 
 // 2-letter language code the OCR backend speaks. `es` and `en` are the only

@@ -34,7 +34,7 @@ async function build4PageFixture(): Promise<Uint8Array> {
 
 describe('pdf-a-excel contract', () => {
   it('exposes the expected cap values (drift guard)', () => {
-    expect(MAX_UPLOAD_BYTES).toBe(20 * 1024 * 1024);
+    expect(MAX_UPLOAD_BYTES).toBe(60 * 1024 * 1024); // PRO ceiling (FREE 20 MB x3)
     expect(MAX_PAGES).toBe(30);
     expect(PDF_MAGIC).toBe('%PDF-');
     expect(MAX_FILENAME_LEN).toBe(200);

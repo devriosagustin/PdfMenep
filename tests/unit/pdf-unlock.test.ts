@@ -36,7 +36,7 @@ async function buildOnePageFixture(): Promise<Uint8Array> {
 
 describe('pdf-unlock contract', () => {
   it('exposes the expected cap values (drift guard)', () => {
-    expect(MAX_UNLOCK_BYTES).toBe(60 * 1024 * 1024);
+    expect(MAX_UNLOCK_BYTES).toBe(180 * 1024 * 1024); // PRO ceiling (FREE 60 MB x3)
     expect(MAX_PAGES).toBe(100);
     expect(MAX_PASSWORD_LEN).toBe(64);
     expect(PDF_MAGIC).toBe('%PDF-');

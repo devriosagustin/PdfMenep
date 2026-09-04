@@ -2,7 +2,7 @@
   "name": "pdfmenep",
   "version": "1.0.0",
   "private": true,
-  "description": "PdfMenep — manipula PDFs y convierte imágenes y documentos en línea.",
+  "description": "PdfMenep \u2014 manipula PDFs y convierte im\u00e1genes y documentos en l\u00ednea.",
   "engines": {
     "node": ">=20.18.1"
   },

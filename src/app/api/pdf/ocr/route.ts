@@ -3,7 +3,9 @@ import { NextResponse } from 'next/server';
 
 import { downloadNameForOcr } from '@/lib/business/pdf-format';
 import { PdfOcrError, runOcrOnPdf } from '@/lib/business/pdf-ocr';
+import { getCurrentPlan } from '@/lib/billing/plan-limits';
 import {
+  FREE_MAX_OCR_BYTES,
   MAX_FILENAME_LEN,
   MAX_OCR_BYTES,
   MAX_OCR_PAGES,
@@ -65,6 +67,9 @@ function parsePagesList(raw: string, maxPages: number): number[] {
 }
 
 async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
+  const plan = await getCurrentPlan();
+  const maxBytes = plan === 'PRO' ? MAX_OCR_BYTES : FREE_MAX_OCR_BYTES;
+
   let form: FormData;
   try {
     form = await req.formData();
@@ -77,10 +82,10 @@ async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
     return { ok: false, response: fieldError(friendlyOcrError('no_file'), 400) };
   }
 
-  if (entry.size > MAX_OCR_BYTES) {
+  if (entry.size > maxBytes) {
     return {
       ok: false,
-      response: fieldError(friendlyOcrError('file_too_big', { mb: 60 }), 413),
+      response: fieldError(friendlyOcrError('file_too_big', { mb: maxBytes / (1024 * 1024) }), 413),
     };
   }
 

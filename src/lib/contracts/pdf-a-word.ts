@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import {
+  FREE_MAX_UPLOAD_BYTES as PDF_TO_WORD_FREE_MAX_BYTES,
   MAX_FILENAME_LEN,
   PDF_MAGIC,
   MAX_UPLOAD_BYTES as PDF_TO_WORD_MAX_BYTES,
@@ -12,9 +13,11 @@ export {
   // Re-exported under a pdf-to-word-specific alias so the contract reads
   // naturally in route handlers and client islands — the value is shared
   // with pdf-extract-text / pdf-a-jpg so any cap change ripples uniformly.
+  PDF_TO_WORD_FREE_MAX_BYTES,
   PDF_TO_WORD_MAX_BYTES,
 };
 
+export const FREE_MAX_UPLOAD_BYTES = PDF_TO_WORD_FREE_MAX_BYTES;
 export const MAX_UPLOAD_BYTES = PDF_TO_WORD_MAX_BYTES;
 export const MAX_PAGES = 30;
 

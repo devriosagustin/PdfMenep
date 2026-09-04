@@ -1,11 +1,14 @@
 import { z } from 'zod';
 
+import { PRO_SCALE } from '@/lib/billing/plan-scale';
 import { MAX_FILENAME_LEN, PDF_MAGIC } from '@/lib/contracts/pdf-convert';
 
 export { MAX_FILENAME_LEN, PDF_MAGIC };
 
-export const MAX_WATERMARK_BYTES = 60 * 1024 * 1024; // 60 MB
-export const MAX_IMAGE_BYTES = 2 * 1024 * 1024; // 2 MB
+export const FREE_MAX_WATERMARK_BYTES = 60 * 1024 * 1024; // 60 MB
+export const MAX_WATERMARK_BYTES = FREE_MAX_WATERMARK_BYTES * PRO_SCALE; // 180 MB — PRO ceiling
+export const FREE_MAX_IMAGE_BYTES = 2 * 1024 * 1024; // 2 MB
+export const MAX_IMAGE_BYTES = FREE_MAX_IMAGE_BYTES * PRO_SCALE; // 6 MB — PRO ceiling
 export const MAX_TEXT_LEN = 80;
 export const MAX_FONT_SIZE = 72;
 export const MIN_FONT_SIZE = 8;

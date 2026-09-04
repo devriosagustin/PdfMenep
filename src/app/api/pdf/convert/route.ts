@@ -7,7 +7,13 @@ import {
   type RasterResult,
   rasterizePdfToJpeg,
 } from '@/lib/business/pdf-rasterize';
-import { MAX_UPLOAD_BYTES, PDF_MAGIC, PdfInputMeta } from '@/lib/contracts/pdf-convert';
+import { getCurrentPlan } from '@/lib/billing/plan-limits';
+import {
+  FREE_MAX_UPLOAD_BYTES,
+  MAX_UPLOAD_BYTES,
+  PDF_MAGIC,
+  PdfInputMeta,
+} from '@/lib/contracts/pdf-convert';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -31,6 +37,9 @@ interface ReadErr {
 }
 
 async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
+  const plan = await getCurrentPlan();
+  const maxBytes = plan === 'PRO' ? MAX_UPLOAD_BYTES : FREE_MAX_UPLOAD_BYTES;
+
   let form: FormData;
   try {
     form = await req.formData();
@@ -50,13 +59,13 @@ async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
       ),
     };
   }
-  if (entry.size > MAX_UPLOAD_BYTES) {
+  if (entry.size > maxBytes) {
     return {
       ok: false,
       response: NextResponse.json(
         {
           errors: {
-            file: `El archivo supera ${(MAX_UPLOAD_BYTES / (1024 * 1024)).toFixed(0)} MB`,
+            file: `El archivo supera ${(maxBytes / (1024 * 1024)).toFixed(0)} MB`,
           },
         },
         { status: 413 },

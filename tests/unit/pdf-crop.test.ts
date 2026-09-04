@@ -39,7 +39,7 @@ const MM_TO_PT = 72 / 25.4;
 
 describe('pdf-crop contract', () => {
   it('exposes the expected cap values (drift guard)', () => {
-    expect(MAX_CROP_BYTES).toBe(60 * 1024 * 1024);
+    expect(MAX_CROP_BYTES).toBe(180 * 1024 * 1024); // PRO ceiling (FREE 60 MB x3)
     expect(MAX_PDF_BOX_MM).toBe(2000);
     expect(PDF_MAGIC).toBe('%PDF-');
     expect(MAX_FILENAME_LEN).toBe(200);
@@ -304,7 +304,7 @@ describe('pdf-crop > downloadNameForCrop', () => {
 
 describe('pdf-crop > MAX_CROP_BYTES wire re-export drift guard', () => {
   it('the contract constant value matches the source constant value (60 MB)', () => {
-    expect(MAX_CROP_BYTES).toBe(60 * 1024 * 1024);
+    expect(MAX_CROP_BYTES).toBe(180 * 1024 * 1024); // PRO ceiling (FREE 60 MB x3)
   });
 
   it('the contract re-exports the same PDF_MAGIC as the source utility', () => {

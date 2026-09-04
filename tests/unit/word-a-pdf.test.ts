@@ -85,7 +85,7 @@ async function buildDocxWithParagraphs(paragraphs: string[]): Promise<Uint8Array
 
 describe('word-a-pdf contract', () => {
   it('exposes the expected cap values (drift guard)', () => {
-    expect(MAX_UPLOAD_BYTES).toBe(15 * 1024 * 1024);
+    expect(MAX_UPLOAD_BYTES).toBe(45 * 1024 * 1024); // PRO ceiling (FREE 15 MB x3)
     expect(DOCX_MAGIC.length).toBe(4);
     expect(MAX_FILENAME_LEN).toBe(200);
   });

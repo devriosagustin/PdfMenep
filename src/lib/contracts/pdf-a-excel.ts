@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import {
+  FREE_MAX_UPLOAD_BYTES as PDF_CONVERT_FREE_MAX_BYTES,
   MAX_FILENAME_LEN,
   MAX_UPLOAD_BYTES as PDF_CONVERT_MAX_BYTES,
   MAX_PAGES as PDF_CONVERT_MAX_PAGES,
@@ -15,9 +16,11 @@ export {
   // with pdf-extract-text / pdf-a-jpg / pdf-a-word so any cap change ripples
   // uniformly.
   PDF_CONVERT_MAX_BYTES,
+  PDF_CONVERT_FREE_MAX_BYTES,
   PDF_CONVERT_MAX_PAGES,
 };
 
+export const FREE_MAX_UPLOAD_BYTES = PDF_CONVERT_FREE_MAX_BYTES;
 export const MAX_UPLOAD_BYTES = PDF_CONVERT_MAX_BYTES;
 export const MAX_PAGES = PDF_CONVERT_MAX_PAGES;
 

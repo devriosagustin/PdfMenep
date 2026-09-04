@@ -1,8 +1,10 @@
 import { z } from 'zod';
 
+import { PRO_SCALE } from '@/lib/billing/plan-scale';
 import { friendlySplitError } from '@/lib/errors/friendly';
 
-export const MAX_PDF_BYTES = 60 * 1024 * 1024; // 60 MB
+export const FREE_MAX_PDF_BYTES = 60 * 1024 * 1024; // 60 MB
+export const MAX_PDF_BYTES = FREE_MAX_PDF_BYTES * PRO_SCALE; // 180 MB — PRO ceiling
 export const MAX_PAGES = 100;
 export const MAX_FILENAME_LEN = 200;
 export const PDF_MAGIC = '%PDF-';

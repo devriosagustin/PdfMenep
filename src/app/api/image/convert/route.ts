@@ -3,8 +3,10 @@ import { NextResponse } from 'next/server';
 
 import { convertImage, detectSource, ImageConvertError } from '@/lib/business/image-convert';
 import { downloadNameFor } from '@/lib/business/image-format';
+import { getCurrentPlan } from '@/lib/billing/plan-limits';
 import {
   CONTENT_TYPES,
+  FREE_MAX_UPLOAD_BYTES,
   ImageFileMeta,
   ImageTargetFormat,
   MAX_UPLOAD_BYTES,
@@ -34,6 +36,9 @@ function plainError(message: string, status: number): Response {
 }
 
 async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
+  const plan = await getCurrentPlan();
+  const maxBytes = plan === 'PRO' ? MAX_UPLOAD_BYTES : FREE_MAX_UPLOAD_BYTES;
+
   let form: FormData;
   try {
     form = await req.formData();
@@ -63,13 +68,13 @@ async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
       ),
     };
   }
-  if (entry.size > MAX_UPLOAD_BYTES) {
+  if (entry.size > maxBytes) {
     return {
       ok: false,
       response: NextResponse.json(
         {
           errors: {
-            file: `El archivo supera ${(MAX_UPLOAD_BYTES / (1024 * 1024)).toFixed(0)} MB`,
+            file: `El archivo supera ${(maxBytes / (1024 * 1024)).toFixed(0)} MB`,
           },
         },
         { status: 413 },

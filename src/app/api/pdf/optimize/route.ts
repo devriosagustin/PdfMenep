@@ -3,7 +3,9 @@ import { NextResponse } from 'next/server';
 
 import { downloadNameForOptimize } from '@/lib/business/pdf-format';
 import { optimizePdf, PdfOptimizeError } from '@/lib/business/pdf-optimize';
+import { getCurrentPlan } from '@/lib/billing/plan-limits';
 import {
+  FREE_MAX_OPTIMIZE_BYTES,
   MAX_FILENAME_LEN,
   MAX_OPTIMIZE_BYTES,
   PDF_MAGIC,
@@ -46,6 +48,9 @@ function isPdfMagic(bytes: Uint8Array): boolean {
 }
 
 async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
+  const plan = await getCurrentPlan();
+  const maxBytes = plan === 'PRO' ? MAX_OPTIMIZE_BYTES : FREE_MAX_OPTIMIZE_BYTES;
+
   let form: FormData;
   try {
     form = await req.formData();
@@ -58,10 +63,13 @@ async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
     return { ok: false, response: fieldError(friendlyOptimizeError('no_file'), 400) };
   }
 
-  if (entry.size > MAX_OPTIMIZE_BYTES) {
+  if (entry.size > maxBytes) {
     return {
       ok: false,
-      response: fieldError(friendlyOptimizeError('file_too_big', { mb: 60 }), 413),
+      response: fieldError(
+        friendlyOptimizeError('file_too_big', { mb: maxBytes / (1024 * 1024) }),
+        413,
+      ),
     };
   }
 

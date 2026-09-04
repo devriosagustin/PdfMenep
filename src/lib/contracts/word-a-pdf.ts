@@ -1,10 +1,12 @@
 import { z } from 'zod';
 
+import { PRO_SCALE } from '@/lib/billing/plan-scale';
 import { MAX_FILENAME_LEN } from '@/lib/contracts/pdf-convert';
 
 export { MAX_FILENAME_LEN };
 
-export const MAX_UPLOAD_BYTES = 15 * 1024 * 1024; // 15 MB
+export const FREE_MAX_UPLOAD_BYTES = 15 * 1024 * 1024; // 15 MB
+export const MAX_UPLOAD_BYTES = FREE_MAX_UPLOAD_BYTES * PRO_SCALE; // 45 MB — PRO ceiling
 export const DOCX_MAGIC = [0x50, 0x4b, 0x03, 0x04]; // "PK\x03\x04" ZIP signature
 
 export function isDocxMagic(bytes: Uint8Array): boolean {

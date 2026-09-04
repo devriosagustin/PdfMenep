@@ -6,7 +6,11 @@ import {
   JpgAssemblyError,
   type JpgAssemblyInput,
 } from '@/lib/business/jpg-to-pdf';
+import { getCurrentPlan } from '@/lib/billing/plan-limits';
 import {
+  FREE_MAX_IMAGES,
+  FREE_MAX_PER_FILE_BYTES,
+  FREE_MAX_TOTAL_BYTES,
   JPEG_MAGIC,
   JpgFileMeta,
   MAX_FILENAME_LEN,
@@ -45,6 +49,11 @@ function isJpegMagic(bytes: Uint8Array): boolean {
 }
 
 async function readUploads(req: Request): Promise<ReadOk | ReadErr> {
+  const plan = await getCurrentPlan();
+  const maxImages = plan === 'PRO' ? MAX_IMAGES : FREE_MAX_IMAGES;
+  const maxPerFileBytes = plan === 'PRO' ? MAX_PER_FILE_BYTES : FREE_MAX_PER_FILE_BYTES;
+  const maxTotalBytes = plan === 'PRO' ? MAX_TOTAL_BYTES : FREE_MAX_TOTAL_BYTES;
+
   let form: FormData;
   try {
     form = await req.formData();
@@ -68,11 +77,11 @@ async function readUploads(req: Request): Promise<ReadOk | ReadErr> {
       ),
     };
   }
-  if (entries.length > MAX_IMAGES) {
+  if (entries.length > maxImages) {
     return {
       ok: false,
       response: NextResponse.json(
-        { errors: { files: `Máximo ${MAX_IMAGES} imágenes` } },
+        { errors: { files: `Máximo ${maxImages} imágenes` } },
         { status: 400 },
       ),
     };
@@ -90,23 +99,28 @@ async function readUploads(req: Request): Promise<ReadOk | ReadErr> {
         response: fieldError(`El nombre de "${filename}" es demasiado largo`, 400),
       };
     }
-    const meta = JpgFileMeta.safeParse({ filename, sizeBytes: entry.size });
-    if (!meta.success) {
-      const reason =
-        entry.size > MAX_PER_FILE_BYTES
-          ? `La imagen "${filename}" supera ${(MAX_PER_FILE_BYTES / (1024 * 1024)).toFixed(0)} MB`
-          : `La imagen "${filename}" no es válida`;
-      return {
-        ok: false,
-        response: fieldError(reason, entry.size > MAX_PER_FILE_BYTES ? 413 : 400),
-      };
-    }
-    total += entry.size;
-    if (total > MAX_TOTAL_BYTES) {
+    if (entry.size > maxPerFileBytes) {
       return {
         ok: false,
         response: fieldError(
-          `El total de las imágenes supera ${(MAX_TOTAL_BYTES / (1024 * 1024)).toFixed(0)} MB`,
+          `La imagen "${filename}" supera ${(maxPerFileBytes / (1024 * 1024)).toFixed(0)} MB`,
+          413,
+        ),
+      };
+    }
+    const meta = JpgFileMeta.safeParse({ filename, sizeBytes: entry.size });
+    if (!meta.success) {
+      return {
+        ok: false,
+        response: fieldError(`La imagen "${filename}" no es válida`, 400),
+      };
+    }
+    total += entry.size;
+    if (total > maxTotalBytes) {
+      return {
+        ok: false,
+        response: fieldError(
+          `El total de las imágenes supera ${(maxTotalBytes / (1024 * 1024)).toFixed(0)} MB`,
           413,
         ),
       };

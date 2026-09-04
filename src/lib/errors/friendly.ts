@@ -28,20 +28,30 @@ export type PdfMergeErrorCode =
   | 'timeout'
   | 'unexpected';
 
-export function friendlyError(code: PdfMergeErrorCode, filename?: string): string {
+export interface FriendlyMergeOverrides {
+  maxPdfs?: number;
+  maxPerFileMb?: number;
+  maxTotalMb?: number;
+}
+
+export function friendlyError(
+  code: PdfMergeErrorCode,
+  filename?: string,
+  overrides?: FriendlyMergeOverrides,
+): string {
   switch (code) {
     case 'too_few_files':
       return 'Sube al menos 2 PDFs para fusionar';
     case 'too_many_files':
-      return `Máximo ${MAX_PDFS} PDFs`;
+      return `Máximo ${overrides?.maxPdfs ?? MAX_PDFS} PDFs`;
     case 'filename_too_long':
       return `El nombre de "${filename ?? ''}" es demasiado largo`;
     case 'file_too_big': {
-      const mb = (MAX_PER_FILE_BYTES / (1024 * 1024)).toFixed(0);
+      const mb = overrides?.maxPerFileMb ?? (MAX_PER_FILE_BYTES / (1024 * 1024)).toFixed(0);
       return `El PDF "${filename ?? ''}" supera ${mb} MB`;
     }
     case 'total_too_big': {
-      const mb = (MAX_TOTAL_BYTES / (1024 * 1024)).toFixed(0);
+      const mb = overrides?.maxTotalMb ?? (MAX_TOTAL_BYTES / (1024 * 1024)).toFixed(0);
       return `El total de los PDFs supera ${mb} MB`;
     }
     case 'bad_magic':
@@ -165,6 +175,7 @@ export interface FriendlyCompressContext {
   filename?: string;
   mb?: number;
   formatsHint?: string;
+  maxFiles?: number;
 }
 
 export function friendlyCompressError(
@@ -187,7 +198,7 @@ export function friendlyCompressError(
     case 'no_files':
       return 'No se subieron archivos';
     case 'too_many_files':
-      return `Demasiados archivos (máximo ${COMPRESS_MAX_FILES})`;
+      return `Demasiados archivos (máximo ${ctx.maxFiles ?? COMPRESS_MAX_FILES})`;
     case 'invalid_quality':
       return 'La calidad debe estar entre 1 y 100';
     case 'bad_magic':
@@ -1245,6 +1256,7 @@ export interface FriendlySignContext {
   maxSignerName?: number;
   maxReason?: number;
   maxLocation?: number;
+  maxSigners?: number;
 }
 
 export function friendlySignError(code: PdfSignErrorCode, ctx: FriendlySignContext = {}): string {
@@ -1278,7 +1290,7 @@ export function friendlySignError(code: PdfSignErrorCode, ctx: FriendlySignConte
     case 'location_too_long':
       return `El lugar debe tener como máximo ${maxLocation} caracteres`;
     case 'too_many_signers':
-      return 'Demasiados firmantes (máximo 5)';
+      return `Demasiados firmantes (máximo ${ctx.maxSigners ?? 5})`;
     case 'password_too_long':
       return `La contraseña debe tener como máximo ${maxChars} caracteres`;
     case 'invalid_pdf_password':

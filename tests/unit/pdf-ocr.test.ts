@@ -15,7 +15,7 @@ import { friendlyOcrError } from '../../src/lib/errors/friendly';
 
 describe('pdf-ocr contract', () => {
   it('exposes the expected cap values (drift guard)', () => {
-    expect(MAX_OCR_BYTES).toBe(60 * 1024 * 1024);
+    expect(MAX_OCR_BYTES).toBe(180 * 1024 * 1024); // PRO ceiling (FREE 60 MB x3)
     expect(MAX_OCR_PAGES).toBe(30);
     expect(PDF_MAGIC).toBe('%PDF-');
     expect(MAX_FILENAME_LEN).toBe(200);

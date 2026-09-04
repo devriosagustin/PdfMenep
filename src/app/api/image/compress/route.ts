@@ -3,10 +3,13 @@ import JSZip from 'jszip';
 import { NextResponse } from 'next/server';
 
 import { compressImage, extensionFor, ImageCompressError } from '@/lib/business/image-compress';
+import { getCurrentPlan } from '@/lib/billing/plan-limits';
 import {
   type CompressFileMeta,
   DEFAULT_QUALITY,
   detectCompressibleMagic,
+  FREE_MAX_COMPRESS_BYTES,
+  FREE_MAX_COMPRESS_FILES,
   MAX_COMPRESS_BYTES,
   MAX_COMPRESS_FILES,
   MAX_FILENAME_LEN,
@@ -33,15 +36,18 @@ function plainError(message: string, status: number): Response {
   return NextResponse.json({ error: message }, { status });
 }
 
-async function readSingleFile(entry: FormDataEntryValue): Promise<FileOk | FileErr> {
+async function readSingleFile(
+  entry: FormDataEntryValue,
+  maxBytes: number,
+): Promise<FileOk | FileErr> {
   if (!(entry instanceof Blob) || entry.size === 0) {
     return { ok: false, message: friendlyCompressError('read_file_failed') };
   }
-  if (entry.size > MAX_COMPRESS_BYTES) {
+  if (entry.size > maxBytes) {
     return {
       ok: false,
       message: friendlyCompressError('file_too_big', {
-        mb: MAX_COMPRESS_BYTES / (1024 * 1024),
+        mb: maxBytes / (1024 * 1024),
       }),
     };
   }
@@ -64,6 +70,10 @@ function pctSaved(original: number, compressed: number): number {
 }
 
 export async function POST(req: Request): Promise<Response> {
+  const plan = await getCurrentPlan();
+  const maxBytes = plan === 'PRO' ? MAX_COMPRESS_BYTES : FREE_MAX_COMPRESS_BYTES;
+  const maxFiles = plan === 'PRO' ? MAX_COMPRESS_FILES : FREE_MAX_COMPRESS_FILES;
+
   let form: FormData;
   try {
     form = await req.formData();
@@ -75,8 +85,8 @@ export async function POST(req: Request): Promise<Response> {
   if (entries.length === 0) {
     return plainError(friendlyCompressError('no_files'), 400);
   }
-  if (entries.length > MAX_COMPRESS_FILES) {
-    return plainError(friendlyCompressError('too_many_files'), 400);
+  if (entries.length > maxFiles) {
+    return plainError(friendlyCompressError('too_many_files', { maxFiles }), 400);
   }
 
   const qualityRaw = form.get('quality');
@@ -93,7 +103,7 @@ export async function POST(req: Request): Promise<Response> {
   const uploads: { filename: string; bytes: Uint8Array }[] = [];
   for (const entry of entries) {
     const rawName = entry instanceof File && entry.name ? entry.name : 'archivo';
-    const read = await readSingleFile(entry);
+    const read = await readSingleFile(entry, maxBytes);
     if (!read.ok) {
       return plainError(read.message, 400);
     }

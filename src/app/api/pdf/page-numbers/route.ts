@@ -3,7 +3,9 @@ import { NextResponse } from 'next/server';
 
 import { downloadNameForPageNumbers } from '@/lib/business/pdf-format';
 import { PdfPageNumbersError, stampPageNumbers } from '@/lib/business/pdf-page-numbers';
+import { getCurrentPlan } from '@/lib/billing/plan-limits';
 import {
+  FREE_MAX_PAGE_NUMBERS_BYTES,
   MAX_FILENAME_LEN,
   MAX_PAGE_NUMBERS_BYTES,
   PDF_MAGIC,
@@ -47,6 +49,9 @@ function isPdfMagic(bytes: Uint8Array): boolean {
 }
 
 async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
+  const plan = await getCurrentPlan();
+  const maxBytes = plan === 'PRO' ? MAX_PAGE_NUMBERS_BYTES : FREE_MAX_PAGE_NUMBERS_BYTES;
+
   let form: FormData;
   try {
     form = await req.formData();
@@ -65,10 +70,13 @@ async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
     };
   }
 
-  if (entry.size > MAX_PAGE_NUMBERS_BYTES) {
+  if (entry.size > maxBytes) {
     return {
       ok: false,
-      response: fieldError(friendlyPageNumbersError('file_too_big', { mb: 60 }), 413),
+      response: fieldError(
+        friendlyPageNumbersError('file_too_big', { mb: maxBytes / (1024 * 1024) }),
+        413,
+      ),
     };
   }
 

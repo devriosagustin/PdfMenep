@@ -29,7 +29,7 @@ async function buildFixture(pageCount: number): Promise<Uint8Array> {
 
 describe('pdf-repair contract', () => {
   it('exposes the expected cap values (drift guard)', () => {
-    expect(MAX_REPAIR_BYTES).toBe(60 * 1024 * 1024);
+    expect(MAX_REPAIR_BYTES).toBe(180 * 1024 * 1024); // PRO ceiling (FREE 60 MB x3)
     expect(PDF_MAGIC).toBe('%PDF-');
     expect(MAX_FILENAME_LEN).toBe(200);
     expect(MAX_PASSWORD_LEN).toBe(64);

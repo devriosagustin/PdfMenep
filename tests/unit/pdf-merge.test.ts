@@ -12,9 +12,9 @@ import {
 
 describe('pdf-merge contract', () => {
   it('exposes the expected cap values (drift guard)', () => {
-    expect(MAX_PDFS).toBe(10);
-    expect(MAX_PER_FILE_BYTES).toBe(20 * 1024 * 1024);
-    expect(MAX_TOTAL_BYTES).toBe(60 * 1024 * 1024);
+    expect(MAX_PDFS).toBe(30); // PRO ceiling (FREE 10 x3)
+    expect(MAX_PER_FILE_BYTES).toBe(60 * 1024 * 1024); // PRO ceiling (FREE 20 MB x3)
+    expect(MAX_TOTAL_BYTES).toBe(180 * 1024 * 1024); // PRO ceiling (FREE 60 MB x3)
     expect(PDF_MAGIC).toBe('%PDF-');
     expect(MAX_FILENAME_LEN).toBe(200);
   });

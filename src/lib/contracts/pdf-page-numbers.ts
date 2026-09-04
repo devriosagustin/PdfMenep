@@ -1,10 +1,12 @@
 import { z } from 'zod';
 
+import { PRO_SCALE } from '@/lib/billing/plan-scale';
 import { MAX_FILENAME_LEN, PDF_MAGIC } from '@/lib/contracts/pdf-convert';
 
 export { MAX_FILENAME_LEN, PDF_MAGIC };
 
-export const MAX_PAGE_NUMBERS_BYTES = 60 * 1024 * 1024; // 60 MB
+export const FREE_MAX_PAGE_NUMBERS_BYTES = 60 * 1024 * 1024; // 60 MB
+export const MAX_PAGE_NUMBERS_BYTES = FREE_MAX_PAGE_NUMBERS_BYTES * PRO_SCALE; // 180 MB — PRO ceiling
 
 export const PdfNumberPosition = z.enum([
   'top-left',

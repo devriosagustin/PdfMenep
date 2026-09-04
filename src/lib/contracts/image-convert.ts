@@ -1,6 +1,9 @@
 import { z } from 'zod';
 
-export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB
+import { PRO_SCALE } from '@/lib/billing/plan-scale';
+
+export const FREE_MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB
+export const MAX_UPLOAD_BYTES = FREE_MAX_UPLOAD_BYTES * PRO_SCALE; // 30 MB — PRO ceiling
 export const MAX_FILENAME_LEN = 200;
 
 export type ImageAccept = 'jpeg' | 'png' | 'webp' | 'gif';

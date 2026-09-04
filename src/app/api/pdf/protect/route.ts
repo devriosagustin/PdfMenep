@@ -3,7 +3,9 @@ import { NextResponse } from 'next/server';
 
 import { downloadNameForProtect } from '@/lib/business/pdf-format';
 import { PdfProtectError, protectPdf } from '@/lib/business/pdf-protect';
+import { getCurrentPlan } from '@/lib/billing/plan-limits';
 import {
+  FREE_MAX_PROTECT_BYTES,
   MAX_FILENAME_LEN,
   MAX_PASSWORD_LEN,
   MAX_PROTECT_BYTES,
@@ -48,6 +50,9 @@ interface ReadErr {
 }
 
 async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
+  const plan = await getCurrentPlan();
+  const maxBytes = plan === 'PRO' ? MAX_PROTECT_BYTES : FREE_MAX_PROTECT_BYTES;
+
   let form: FormData;
   try {
     form = await req.formData();
@@ -66,11 +71,11 @@ async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
     };
   }
 
-  if (entry.size > MAX_PROTECT_BYTES) {
+  if (entry.size > maxBytes) {
     return {
       ok: false,
       response: fieldError(
-        friendlyProtectError('file_too_big', { mb: MAX_PROTECT_BYTES / (1024 * 1024) }),
+        friendlyProtectError('file_too_big', { mb: maxBytes / (1024 * 1024) }),
         413,
       ),
     };

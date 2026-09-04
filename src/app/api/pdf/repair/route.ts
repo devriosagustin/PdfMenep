@@ -3,7 +3,9 @@ import { NextResponse } from 'next/server';
 
 import { downloadNameForRepair } from '@/lib/business/pdf-format';
 import { PdfRepairError, repairPdf } from '@/lib/business/pdf-repair';
+import { getCurrentPlan } from '@/lib/billing/plan-limits';
 import {
+  FREE_MAX_REPAIR_BYTES,
   MAX_FILENAME_LEN,
   MAX_PASSWORD_LEN,
   MAX_REPAIR_BYTES,
@@ -50,6 +52,9 @@ interface ReadErr {
 }
 
 async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
+  const plan = await getCurrentPlan();
+  const maxBytes = plan === 'PRO' ? MAX_REPAIR_BYTES : FREE_MAX_REPAIR_BYTES;
+
   let form: FormData;
   try {
     form = await req.formData();
@@ -68,12 +73,12 @@ async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
     };
   }
 
-  if (entry.size > MAX_REPAIR_BYTES) {
+  if (entry.size > maxBytes) {
     return {
       ok: false,
       response: fieldError(
         friendlyRepairError('file_too_big', {
-          mb: MAX_REPAIR_BYTES / (1024 * 1024),
+          mb: maxBytes / (1024 * 1024),
           filename: entry instanceof File && entry.name ? entry.name : '',
         }),
         413,

@@ -2,7 +2,11 @@ import 'server-only';
 import { NextResponse } from 'next/server';
 import { downloadNameForMerge } from '@/lib/business/pdf-format';
 import { mergePdfsToPdf, PdfMergeError, type PdfMergeInput } from '@/lib/business/pdf-merge';
+import { getCurrentPlan } from '@/lib/billing/plan-limits';
 import {
+  FREE_MAX_PDFS,
+  FREE_MAX_PER_FILE_BYTES,
+  FREE_MAX_TOTAL_BYTES,
   MAX_FILENAME_LEN,
   MAX_PDFS,
   MAX_PER_FILE_BYTES,
@@ -43,6 +47,11 @@ function isPdfMagic(bytes: Uint8Array): boolean {
 }
 
 async function readUploads(req: Request): Promise<ReadOk | ReadErr> {
+  const plan = await getCurrentPlan();
+  const maxPdfs = plan === 'PRO' ? MAX_PDFS : FREE_MAX_PDFS;
+  const maxPerFileBytes = plan === 'PRO' ? MAX_PER_FILE_BYTES : FREE_MAX_PER_FILE_BYTES;
+  const maxTotalBytes = plan === 'PRO' ? MAX_TOTAL_BYTES : FREE_MAX_TOTAL_BYTES;
+
   let form: FormData;
   try {
     form = await req.formData();
@@ -60,10 +69,10 @@ async function readUploads(req: Request): Promise<ReadOk | ReadErr> {
       response: fieldError(friendlyError('too_few_files'), 400),
     };
   }
-  if (entries.length > MAX_PDFS) {
+  if (entries.length > maxPdfs) {
     return {
       ok: false,
-      response: fieldError(friendlyError('too_many_files'), 400),
+      response: fieldError(friendlyError('too_many_files', undefined, { maxPdfs }), 400),
     };
   }
 
@@ -79,24 +88,34 @@ async function readUploads(req: Request): Promise<ReadOk | ReadErr> {
         response: fieldError(friendlyError('filename_too_long', filename), 400),
       };
     }
+    if (entry.size > maxPerFileBytes) {
+      return {
+        ok: false,
+        response: fieldError(
+          friendlyError('file_too_big', filename, {
+            maxPerFileMb: maxPerFileBytes / (1024 * 1024),
+          }),
+          413,
+        ),
+      };
+    }
     const meta = PdfMergeInputMeta.safeParse({ filename, sizeBytes: entry.size });
     if (!meta.success) {
-      if (entry.size > MAX_PER_FILE_BYTES) {
-        return {
-          ok: false,
-          response: fieldError(friendlyError('file_too_big', filename), 413),
-        };
-      }
       return {
         ok: false,
         response: fieldError(friendlyError('invalid_pdf_meta', filename), 400),
       };
     }
     total += entry.size;
-    if (total > MAX_TOTAL_BYTES) {
+    if (total > maxTotalBytes) {
       return {
         ok: false,
-        response: fieldError(friendlyError('total_too_big'), 413),
+        response: fieldError(
+          friendlyError('total_too_big', undefined, {
+            maxTotalMb: maxTotalBytes / (1024 * 1024),
+          }),
+          413,
+        ),
       };
     }
     const buffer = await entry.arrayBuffer();

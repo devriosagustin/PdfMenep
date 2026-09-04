@@ -1,11 +1,14 @@
 import { z } from 'zod';
 
+import { PRO_SCALE } from '@/lib/billing/plan-scale';
 import { MAX_FILENAME_LEN, PDF_MAGIC } from '@/lib/contracts/pdf-convert';
 
 export { MAX_FILENAME_LEN, PDF_MAGIC };
 
-export const MAX_SIGN_BYTES = 60 * 1024 * 1024; // 60 MB
-export const MAX_SIGNERS = 5;
+export const FREE_MAX_SIGN_BYTES = 60 * 1024 * 1024; // 60 MB
+export const MAX_SIGN_BYTES = FREE_MAX_SIGN_BYTES * PRO_SCALE; // 180 MB — PRO ceiling
+export const FREE_MAX_SIGNERS = 5;
+export const MAX_SIGNERS = FREE_MAX_SIGNERS * PRO_SCALE; // PRO ceiling
 export const MAX_SIGNER_NAME_LEN = 80;
 export const MAX_REASON_LEN = 200;
 export const MAX_LOCATION_LEN = 200;

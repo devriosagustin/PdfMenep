@@ -1,15 +1,17 @@
 import { z } from 'zod';
 
+import { PRO_SCALE } from '@/lib/billing/plan-scale';
 import { MAX_FILENAME_LEN, PDF_MAGIC } from '@/lib/contracts/pdf-convert';
 
 export { MAX_FILENAME_LEN, PDF_MAGIC };
 
 // Local size cap: pdf-convert caps uploads at 20 MB, too restrictive for a
 // page-deletion tool where multi-MB contracts/manuals are common. We match
-// the rotate / page-numbers family (60 MB). The drift-guard test in
-// tests/unit/pdf-delete-pages.test.ts asserts this constant stays equal to
-// 60 * 1024 * 1024.
-export const MAX_DELETE_PAGES_BYTES = 60 * 1024 * 1024; // 60 MB
+// the rotate / page-numbers family (60 MB free / 180 MB PRO). The
+// drift-guard test in tests/unit/pdf-delete-pages.test.ts asserts
+// FREE_MAX_DELETE_PAGES_BYTES stays equal to 60 * 1024 * 1024.
+export const FREE_MAX_DELETE_PAGES_BYTES = 60 * 1024 * 1024; // 60 MB
+export const MAX_DELETE_PAGES_BYTES = FREE_MAX_DELETE_PAGES_BYTES * PRO_SCALE; // 180 MB — PRO ceiling
 
 export const MAX_PAGES = 100;
 

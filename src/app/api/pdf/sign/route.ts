@@ -3,10 +3,14 @@ import { NextResponse } from 'next/server';
 
 import { downloadNameForSign } from '@/lib/business/pdf-format';
 import { PdfSignError, signPdf } from '@/lib/business/pdf-sign';
+import { getCurrentPlan } from '@/lib/billing/plan-limits';
 import {
+  FREE_MAX_SIGN_BYTES,
+  FREE_MAX_SIGNERS,
   MAX_FILENAME_LEN,
   MAX_PASSWORD_LEN,
   MAX_SIGN_BYTES,
+  MAX_SIGNERS,
   PDF_MAGIC,
   type PdfSignFieldErrors,
   PdfSignInputMeta,
@@ -58,6 +62,10 @@ interface ReadErr {
 }
 
 async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
+  const plan = await getCurrentPlan();
+  const maxBytes = plan === 'PRO' ? MAX_SIGN_BYTES : FREE_MAX_SIGN_BYTES;
+  const maxSigners = plan === 'PRO' ? MAX_SIGNERS : FREE_MAX_SIGNERS;
+
   let form: FormData;
   try {
     form = await req.formData();
@@ -76,12 +84,12 @@ async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
     };
   }
 
-  if (entry.size > MAX_SIGN_BYTES) {
+  if (entry.size > maxBytes) {
     return {
       ok: false,
       response: fieldError(
         friendlySignError('file_too_big', {
-          mb: MAX_SIGN_BYTES / (1024 * 1024),
+          mb: maxBytes / (1024 * 1024),
           filename: entry instanceof File && entry.name ? entry.name : '',
         }),
         413,
@@ -127,13 +135,13 @@ async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
     let code: 'invalid_signers' | 'too_many_signers' = 'invalid_signers';
     try {
       const arr = JSON.parse(signersRaw);
-      if (Array.isArray(arr) && arr.length > 5) code = 'too_many_signers';
+      if (Array.isArray(arr) && arr.length > maxSigners) code = 'too_many_signers';
     } catch {
       // keep 'invalid_signers'
     }
     return {
       ok: false,
-      response: fieldSignersError(friendlySignError(code), 400),
+      response: fieldSignersError(friendlySignError(code, { maxSigners }), 400),
     };
   }
   const signers = signersParsed.data as ReadonlyArray<

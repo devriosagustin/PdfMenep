@@ -3,7 +3,9 @@ import { NextResponse } from 'next/server';
 
 import { downloadNameForSplit } from '@/lib/business/pdf-format';
 import { extractPdfPages, type PageSelection, PdfSplitError } from '@/lib/business/pdf-split';
+import { getCurrentPlan } from '@/lib/billing/plan-limits';
 import {
+  FREE_MAX_PDF_BYTES,
   MAX_FILENAME_LEN,
   MAX_PAGES,
   MAX_PDF_BYTES,
@@ -48,6 +50,9 @@ interface ReadErr {
 }
 
 async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
+  const plan = await getCurrentPlan();
+  const maxBytes = plan === 'PRO' ? MAX_PDF_BYTES : FREE_MAX_PDF_BYTES;
+
   let form: FormData;
   try {
     form = await req.formData();
@@ -66,10 +71,10 @@ async function readUpload(req: Request): Promise<ReadOk | ReadErr> {
     };
   }
 
-  if (entry.size > MAX_PDF_BYTES) {
+  if (entry.size > maxBytes) {
     return {
       ok: false,
-      response: fieldError(friendlySplitError('file_too_big', { mb: 60 }), 413),
+      response: fieldError(friendlySplitError('file_too_big', { mb: maxBytes / (1024 * 1024) }), 413),
     };
   }
 

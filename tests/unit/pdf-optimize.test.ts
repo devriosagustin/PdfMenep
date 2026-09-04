@@ -16,7 +16,7 @@ import {
 
 describe('pdf-optimize contract', () => {
   it('exposes the expected cap values (drift guard)', () => {
-    expect(MAX_OPTIMIZE_BYTES).toBe(60 * 1024 * 1024);
+    expect(MAX_OPTIMIZE_BYTES).toBe(180 * 1024 * 1024); // PRO ceiling (FREE 60 MB x3)
     expect(MAX_FILENAME_LEN).toBe(200);
     expect(PDF_MAGIC).toBe('%PDF-');
   });

@@ -31,7 +31,7 @@ const POSITION_LITERALS: PdfNumberPosition[] = [
 
 describe('pdf-page-numbers contract', () => {
   it('exposes the expected cap values (drift guard)', () => {
-    expect(MAX_PAGE_NUMBERS_BYTES).toBe(60 * 1024 * 1024);
+    expect(MAX_PAGE_NUMBERS_BYTES).toBe(180 * 1024 * 1024); // PRO ceiling (FREE 60 MB x3)
     expect(MAX_FILENAME_LEN).toBe(200);
     expect(PDF_MAGIC).toBe('%PDF-');
   });

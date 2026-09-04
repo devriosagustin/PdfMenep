@@ -1,12 +1,15 @@
 import { z } from 'zod';
 
+import { PRO_SCALE } from '@/lib/billing/plan-scale';
 import { MAX_FILENAME_LEN, PDF_MAGIC } from '@/lib/contracts/pdf-convert';
 
 export { MAX_FILENAME_LEN, PDF_MAGIC };
 
-// Local size cap: 60 MB (rotate / delete-pages / page-numbers family) — large
-// enough to accept brochure PDFs but tight enough to keep the worker bounded.
-export const MAX_CROP_BYTES = 60 * 1024 * 1024; // 60 MB
+// Local size cap: 60 MB free / 180 MB PRO (rotate / delete-pages /
+// page-numbers family) — large enough to accept brochure PDFs but tight
+// enough to keep the worker bounded.
+export const FREE_MAX_CROP_BYTES = 60 * 1024 * 1024; // 60 MB
+export const MAX_CROP_BYTES = FREE_MAX_CROP_BYTES * PRO_SCALE; // 180 MB — PRO ceiling
 
 // Geometric cap on the user-facing dimension (mm). 2000 mm ≈ 6.5 ft, well
 // past any real PDF page (PDF's MediaBox is in points, but most paper stops

@@ -57,8 +57,8 @@ function tinyPngBytes(): Uint8Array {
 
 describe('pdf-watermark contract', () => {
   it('exposes the expected cap values (drift guard)', () => {
-    expect(MAX_WATERMARK_BYTES).toBe(60 * 1024 * 1024);
-    expect(MAX_IMAGE_BYTES).toBe(2 * 1024 * 1024);
+    expect(MAX_WATERMARK_BYTES).toBe(180 * 1024 * 1024); // PRO ceiling (FREE 60 MB x3)
+    expect(MAX_IMAGE_BYTES).toBe(6 * 1024 * 1024); // PRO ceiling (FREE 2 MB x3)
     expect(MAX_TEXT_LEN).toBe(80);
     expect(MAX_FONT_SIZE).toBe(72);
     expect(MIN_FONT_SIZE).toBe(8);
